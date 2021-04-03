@@ -53,6 +53,7 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
   private timerSub: Subscription;
   private prevDrag = {x: 0, y: 0};
   private prevZoom = 1;
+  public photoAspect = 1;
 
   constructor(public fullScreenService: FullScreenService) {
   }
@@ -324,6 +325,7 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
         height: (widthFilled ? divWidth / photoAspect : divHeight) * this.zoom
       };
 
+      this.photoAspect = photoAspect;
 
       const widthDrag = Math.abs(divWidth - size.width) / 2;
       const heightDrag = Math.abs(divHeight - size.height) / 2;
