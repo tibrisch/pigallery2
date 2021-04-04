@@ -2,6 +2,7 @@ import {Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnD
 import {MediaDTO} from '../../../../../../common/entities/MediaDTO';
 import {FullScreenService} from '../../fullscreen.service';
 import {GalleryPhotoComponent} from '../../grid/photo/photo.grid.gallery.component';
+import {DomSanitizer, SafeStyle} from '@angular/platform-browser';
 import {Observable, Subscription, timer} from 'rxjs';
 import {filter} from 'rxjs/operators';
 import {PhotoDTO} from '../../../../../../common/entities/PhotoDTO';
@@ -53,9 +54,9 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
   private timerSub: Subscription;
   private prevDrag = {x: 0, y: 0};
   private prevZoom = 1;
-  public photoAspect = 1;
 
-  constructor(public fullScreenService: FullScreenService) {
+  constructor(public fullScreenService: FullScreenService,
+    private _sanitizer: DomSanitizer) {
   }
 
   public get Zoom(): number {
@@ -82,6 +83,16 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
     this.prevDrag.y = this.drag.y;
     this.zoom = zoom;
     this.checkZoomAndDrag();
+  }
+
+  get ImageTransform(): SafeStyle {
+    return this._sanitizer.bypassSecurityTrustStyle('scale(' + this.zoom +
+      ') translate(calc(' + -50 / this.zoom + '% + ' + this.drag.x / this.zoom + 'px), calc(' +
+      -50 / this.zoom + '% + ' + this.drag.y / this.zoom + 'px))');
+  }
+
+  get ScaleZoomInverse(): SafeStyle {
+    return this._sanitizer.bypassSecurityTrustStyle('scale(' + 1/this.zoom + ')');
   }
 
   get Title(): string {
@@ -324,8 +335,6 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
         width: (widthFilled ? divWidth : divHeight * photoAspect) * this.zoom,
         height: (widthFilled ? divWidth / photoAspect : divHeight) * this.zoom
       };
-
-      this.photoAspect = photoAspect;
 
       const widthDrag = Math.abs(divWidth - size.width) / 2;
       const heightDrag = Math.abs(divHeight - size.height) / 2;
