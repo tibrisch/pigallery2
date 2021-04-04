@@ -48,6 +48,41 @@ export class SearchQueryParser {
   constructor(private keywords: QueryKeywords) {
   }
 
+  public static stringifyText(text: string, matchType = TextSearchQueryMatchTypes.like): string {
+    if (matchType === TextSearchQueryMatchTypes.exact_match) {
+      return '"' + text + '"';
+    }
+    if (text.indexOf(' ') !== -1) {
+      return '(' + text + ')';
+    }
+    return text;
+  }
+
+  private static stringifyDate(time: number): string {
+    const date = new Date(time);
+    // simplify date with yeah only if its first of jan
+    if (date.getMonth() === 0 && date.getDate() === 1) {
+      return date.getFullYear().toString();
+    }
+    return this.stringifyText(date.toLocaleDateString());
+  }
+
+  private static parseDate(text: string): number {
+    if (text.charAt(0) === '"' || text.charAt(0) === '(') {
+      text = text.substring(1);
+    }
+    if (text.charAt(text.length - 1) === '"' || text.charAt(text.length - 1) === ')') {
+      text = text.substring(0, text.length - 1);
+    }
+    // it is the year only
+    if (text.length === 4) {
+      const d = new Date(2000, 0, 1);
+      d.setFullYear(parseInt(text, 10));
+      return d.getTime();
+    }
+    return Date.parse(text);
+  }
+
   public parse(str: string, implicitOR = true): SearchQueryDTO {
     str = str.replace(/\s\s+/g, ' ') // remove double spaces
       .replace(/:\s+/g, ':').replace(/\)(?=\S)/g, ') ').trim();
@@ -136,13 +171,13 @@ export class SearchQueryParser {
     if (str.startsWith(this.keywords.from + ':')) {
       return <FromDateSearch>{
         type: SearchQueryTypes.from_date,
-        value: Date.parse(str.slice((this.keywords.from + ':').length + 1, str.length - 1))
+        value: SearchQueryParser.parseDate(str.substring((this.keywords.from + ':').length))
       };
     }
     if (str.startsWith(this.keywords.to + ':')) {
       return <ToDateSearch>{
         type: SearchQueryTypes.to_date,
-        value: Date.parse(str.slice((this.keywords.to + ':').length + 1, str.length - 1))
+        value: SearchQueryParser.parseDate(str.substring((this.keywords.to + ':').length))
       };
     }
 
@@ -240,12 +275,14 @@ export class SearchQueryParser {
         if (!(<FromDateSearch>query).value) {
           return '';
         }
-        return this.keywords.from + ':(' + new Date((<FromDateSearch>query).value).toLocaleDateString() + ')'.trim();
+        return this.keywords.from + ':' +
+          SearchQueryParser.stringifyDate((<FromDateSearch>query).value);
       case SearchQueryTypes.to_date:
         if (!(<ToDateSearch>query).value) {
           return '';
         }
-        return this.keywords.to + ':(' + new Date((<ToDateSearch>query).value).toLocaleDateString() + ')'.trim();
+        return this.keywords.to + ':' +
+          SearchQueryParser.stringifyDate((<ToDateSearch>query).value);
       case SearchQueryTypes.min_rating:
         return this.keywords.minRating + ':' + (isNaN((<RangeSearch>query).value) ? '' : (<RangeSearch>query).value);
       case SearchQueryTypes.max_rating:
@@ -261,13 +298,7 @@ export class SearchQueryParser {
         return (<DistanceSearch>query).distance + '-' + this.keywords.kmFrom + ':' + (<DistanceSearch>query).from.text;
 
       case SearchQueryTypes.any_text:
-        if ((<TextSearch>query).matchType === TextSearchQueryMatchTypes.exact_match) {
-          return '"' + (<TextSearch>query).text + '"';
-
-        } else if ((<TextSearch>query).text.indexOf(' ') !== -1) {
-          return '(' + (<TextSearch>query).text + ')';
-        }
-        return (<TextSearch>query).text;
+        return SearchQueryParser.stringifyText((<TextSearch>query).text, (<TextSearch>query).matchType);
 
       case SearchQueryTypes.person:
       case SearchQueryTypes.position:
@@ -278,13 +309,8 @@ export class SearchQueryParser {
         if (!(<TextSearch>query).text) {
           return '';
         }
-        if ((<TextSearch>query).matchType === TextSearchQueryMatchTypes.exact_match) {
-          return (<any>this.keywords)[SearchQueryTypes[query.type]] + ':"' + (<TextSearch>query).text + '"';
-
-        } else if ((<TextSearch>query).text.indexOf(' ') !== -1) {
-          return (<any>this.keywords)[SearchQueryTypes[query.type]] + ':(' + (<TextSearch>query).text + ')';
-        }
-        return (<any>this.keywords)[SearchQueryTypes[query.type]] + ':' + (<TextSearch>query).text;
+        return (<any>this.keywords)[SearchQueryTypes[query.type]] + ':' +
+          SearchQueryParser.stringifyText((<TextSearch>query).text, (<TextSearch>query).matchType);
 
       default:
         throw new Error('Unknown type: ' + query.type);

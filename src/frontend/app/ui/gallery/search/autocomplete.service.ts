@@ -6,6 +6,7 @@ import {SearchQueryParserService} from './search-query-parser.service';
 import {BehaviorSubject} from 'rxjs';
 import {SearchQueryTypes, TextSearchQueryTypes} from '../../../../../common/entities/SearchQueryDTO';
 import {QueryParams} from '../../../../../common/QueryParams';
+import {SearchQueryParser} from '../../../../../common/SearchQueryParser';
 
 @Injectable()
 export class AutoCompleteService {
@@ -30,6 +31,15 @@ export class AutoCompleteService {
     for (let i = 0; i < 10; i++) {
       this.keywords.push(i + this._searchQueryParserService.keywords.NSomeOf);
     }
+
+    this.keywords.push(this._searchQueryParserService.keywords.to + ':' +
+      SearchQueryParser.stringifyText((new Date).getFullYear().toString()));
+    this.keywords.push(this._searchQueryParserService.keywords.to + ':' +
+      SearchQueryParser.stringifyText((new Date).toLocaleDateString()));
+    this.keywords.push(this._searchQueryParserService.keywords.from + ':' +
+      SearchQueryParser.stringifyText((new Date).getFullYear().toString()));
+    this.keywords.push(this._searchQueryParserService.keywords.from + ':' +
+      SearchQueryParser.stringifyText((new Date).toLocaleDateString()));
 
     TextSearchQueryTypes.forEach(t => {
       this.textSearchKeywordsMap[(<any>this._searchQueryParserService.keywords)[SearchQueryTypes[t]]] = t;
@@ -69,14 +79,6 @@ export class AutoCompleteService {
     return items;
   }
 
-  private getTypeFromPrefix(text: string): SearchQueryTypes {
-    const tokens = text.split(':');
-    if (tokens.length !== 2) {
-      return null;
-    }
-    return this.textSearchKeywordsMap[tokens[0]] || null;
-  }
-
   public getPrefixLessSearchText(text: string): string {
     const tokens = text.split(':');
     if (tokens.length !== 2) {
@@ -87,6 +89,14 @@ export class AutoCompleteService {
       return tokens[1].substring(1);
     }
     return tokens[1];
+  }
+
+  private getTypeFromPrefix(text: string): SearchQueryTypes {
+    const tokens = text.split(':');
+    if (tokens.length !== 2) {
+      return null;
+    }
+    return this.textSearchKeywordsMap[tokens[0]] || null;
   }
 
   private ACItemToRenderable(item: IAutoCompleteItem): RenderableAutoCompleteItem {

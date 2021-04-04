@@ -1,4 +1,4 @@
-import {Component, ElementRef, Input, OnChanges, ViewChild, AfterViewInit} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Input, OnChanges, ViewChild} from '@angular/core';
 import {PhotoDTO} from '../../../../../common/entities/PhotoDTO';
 import {Dimension, IRenderable} from '../../../model/IRenderable';
 import {GalleryMapLightboxComponent} from './lightbox/lightbox.map.gallery.component';
@@ -20,10 +20,31 @@ export class GalleryMapComponent implements OnChanges, IRenderable, AfterViewIni
   mapPhotos: Array<{ lat: number, lng: number }> = [];
   @ViewChild('map', {static: false}) mapElement: ElementRef;
   @ViewChild('yagaMap', {static: false}) yagaMap: MapComponent;
-  height: number = null;
+
+//  height: number = null;
 
 
   constructor(public mapService: MapService) {
+  }
+
+  get EnableMapPreview(): boolean {
+    /**
+     * Disabling map preview on IOS as safari has issues handling z-index of leaflet (yaga-maps)
+     * Details https://github.com/bpatrik/pigallery2/issues/155
+     * TODO: re enable it once yaga-maps is fixed
+     */
+    const isIOS = [
+        'iPad Simulator',
+        'iPhone Simulator',
+        'iPod Simulator',
+        'iPad',
+        'iPhone',
+        'iPod'
+      ].includes(navigator.platform)
+      // iPad on iOS 13 detection
+      || (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+
+    return !isIOS;
   }
 
   ngOnChanges() {
@@ -47,7 +68,7 @@ export class GalleryMapComponent implements OnChanges, IRenderable, AfterViewIni
 
   ngAfterViewInit() {
     setTimeout(() => {
-      this.height = this.mapElement.nativeElement.clientHeight;
+      //    this.height = this.mapElement.nativeElement.clientHeight;
       this.yagaMap.setView(this.mapPhotos[0], 99);
       this.yagaMap.fitBounds(this.mapPhotos.map(mp => <[number, number]>[mp.lat, mp.lng]));
       this.yagaMap.zoom = 0;

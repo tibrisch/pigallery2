@@ -220,9 +220,8 @@ apt-get install build-essential  libkrb5-dev gcc g++
   I will give a higher priority to a feature that has more 'likes' (i.e.: `+1`-s or thumbs ups) on it.
 
 ## 5. Known errors
-* EXIF orientation tag:
-  *  Some photos code the orientation tag and with/height in a less conventional format, like the "duck photo" in [#19](https://github.com/bpatrik/pigallery2/issues/19). 
-After Browsers support orientation tag natively [#172](https://github.com/bpatrik/pigallery2/issues/172), I could not find a solution for that. 
+* IOS map issue
+  * Map on IOS prevents using the buttons in the image preview navigation, see #155
 * Video support on weak servers (like raspberry pi) with low upload rate
   * video playback may use up too much resources and the server might not response for a while. Enable video transcoding in the app, to transcode the videos to lover bitrate. 
   

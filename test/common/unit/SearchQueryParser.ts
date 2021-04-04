@@ -9,6 +9,7 @@ import {
   MinResolutionSearch,
   OrientationSearch,
   ORSearchQuery,
+  RangeSearch,
   SearchQueryDTO,
   SearchQueryTypes,
   SomeOfSearchQuery,
@@ -66,8 +67,21 @@ describe('SearchQueryParser', () => {
     });
 
     it('Date search', () => {
+      check(<FromDateSearch>{type: SearchQueryTypes.from_date, value: (new Date(2020, 1, 10)).getTime()});
       check(<FromDateSearch>{type: SearchQueryTypes.from_date, value: (new Date(2020, 1, 1)).getTime()});
-      check(<ToDateSearch>{type: SearchQueryTypes.to_date, value: (new Date(2020, 1, 2)).getTime()});
+      check(<ToDateSearch>{type: SearchQueryTypes.to_date, value: (new Date(2020, 1, 20)).getTime()});
+      check(<ToDateSearch>{type: SearchQueryTypes.to_date, value: (new Date(2020, 1, 1)).getTime()});
+
+      const parser = new SearchQueryParser(keywords);
+      // test if date gets simplified on 1st of Jan.
+      let query: RangeSearch = <ToDateSearch>{type: SearchQueryTypes.to_date, value: (new Date(2020, 0, 1)).getTime()};
+      expect(parser.parse(keywords.to + ':' + (new Date(query.value)).getFullYear()))
+        .to.deep.equals(query, parser.stringify(query));
+
+      query = <FromDateSearch>{type: SearchQueryTypes.from_date, value: (new Date(2020, 0, 1)).getTime()};
+      expect(parser.parse(keywords.from + ':' + (new Date(query.value)).getFullYear()))
+        .to.deep.equals(query, parser.stringify(query));
+
     });
     it('Rating search', () => {
       check(<MinRatingSearch>{type: SearchQueryTypes.min_rating, value: 10});
