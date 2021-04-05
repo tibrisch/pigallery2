@@ -91,9 +91,6 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
       -50 / this.zoom + '% + ' + this.drag.y / this.zoom + 'px))');
   }
 
-  get ScaleZoomInverse(): SafeStyle {
-    return this._sanitizer.bypassSecurityTrustStyle('scale(' + 1/this.zoom + ')');
-  }
 
   get Title(): string {
     if (!this.activePhoto) {
