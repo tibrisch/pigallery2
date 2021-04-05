@@ -62,8 +62,8 @@
         [style.transform]="ImageTransform"
         [style.top.%]="(zoom*(face.box.top+(face.box.height/2))-(activePhoto.gridMedia.Photo.metadata.size.height/2)*(zoom-1)) / activePhoto.gridMedia.Photo.metadata.size.height*100"
         [style.left.%]="(zoom*(face.box.left+(face.box.width/2))-(activePhoto.gridMedia.Photo.metadata.size.width/2)*(zoom-1)) / activePhoto.gridMedia.Photo.metadata.size.width*100"
-        [style.height.%]="face.box.height / activePhoto.gridMedia.Photo.metadata.size.height*100"
-        [style.width.%]="face.box.width / activePhoto.gridMedia.Photo.metadata.size.width*100"
+        [style.height.%]="face.box.height / activePhoto.gridMedia.Photo.metadata.size.height*100*zoom"
+        [style.width.%]="face.box.width / activePhoto.gridMedia.Photo.metadata.size.width*100*zoom"
         *ngFor="let face of activePhoto.gridMedia.Photo.metadata.faces">
         <div class="face-box"></div>
         <span class="face-name">{{face.name}}</span>

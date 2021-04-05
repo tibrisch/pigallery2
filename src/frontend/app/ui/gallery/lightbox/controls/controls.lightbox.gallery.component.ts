@@ -86,9 +86,9 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
   }
 
   get ImageTransform(): SafeStyle {
-    return this._sanitizer.bypassSecurityTrustStyle('scale(' + this.zoom +
-      ') translate(calc(' + -50 / this.zoom + '% + ' + this.drag.x / this.zoom + 'px), calc(' +
-      -50 / this.zoom + '% + ' + this.drag.y / this.zoom + 'px))');
+    return this._sanitizer.bypassSecurityTrustStyle(
+      'translate(calc(' + -50  + '% + ' + this.drag.x  + 'px), calc(' +
+      -50  + '% + ' + this.drag.y  + 'px))');
   }
 
 
