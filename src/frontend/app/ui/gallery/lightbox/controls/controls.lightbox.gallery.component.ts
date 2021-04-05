@@ -134,6 +134,7 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
     this.drag.x = this.prevDrag.x + $event.deltaX;
     this.drag.y = this.prevDrag.y + $event.deltaY;
     this.checkZoomAndDrag();
+    this.showControls();
     if ($event.isFinal) {
       this.prevDrag = {
         x: this.drag.x,
