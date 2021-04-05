@@ -2,6 +2,7 @@ import {Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnD
 import {MediaDTO} from '../../../../../../common/entities/MediaDTO';
 import {FullScreenService} from '../../fullscreen.service';
 import {GalleryPhotoComponent} from '../../grid/photo/photo.grid.gallery.component';
+import {DomSanitizer, SafeStyle} from '@angular/platform-browser';
 import {Observable, Subscription, timer} from 'rxjs';
 import {filter} from 'rxjs/operators';
 import {PhotoDTO} from '../../../../../../common/entities/PhotoDTO';
@@ -54,7 +55,8 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
   private prevDrag = {x: 0, y: 0};
   private prevZoom = 1;
 
-  constructor(public fullScreenService: FullScreenService) {
+  constructor(public fullScreenService: FullScreenService,
+    private _sanitizer: DomSanitizer) {
   }
 
   public get Zoom(): number {
@@ -82,6 +84,13 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
     this.zoom = zoom;
     this.checkZoomAndDrag();
   }
+
+  get ImageTransform(): SafeStyle {
+    return this._sanitizer.bypassSecurityTrustStyle(
+      'translate(calc(' + -50  + '% + ' + this.drag.x  + 'px), calc(' +
+      -50  + '% + ' + this.drag.y  + 'px))');
+  }
+
 
   get Title(): string {
     if (!this.activePhoto) {
@@ -125,6 +134,7 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
     this.drag.x = this.prevDrag.x + $event.deltaX;
     this.drag.y = this.prevDrag.y + $event.deltaY;
     this.checkZoomAndDrag();
+    this.showControls();
     if ($event.isFinal) {
       this.prevDrag = {
         x: this.drag.x,
@@ -323,7 +333,6 @@ export class ControlsLightboxComponent implements OnDestroy, OnInit, OnChanges {
         width: (widthFilled ? divWidth : divHeight * photoAspect) * this.zoom,
         height: (widthFilled ? divWidth / photoAspect : divHeight) * this.zoom
       };
-
 
       const widthDrag = Math.abs(divWidth - size.width) / 2;
       const heightDrag = Math.abs(divHeight - size.height) / 2;
